@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="jquery-3.3.1.js"></script>
-    <script src="demo6.js"></script>
+    <script src="demo7.js"></script>
     <style>
         html,
         body {
@@ -20,13 +20,16 @@
             /*overflow: hidden;*/
 
         }
-        #myCanvas2 {
+        #myCanvas2, #myCanvas3 {
             position: absolute;
             width: 100%;
             height: 100%;
         }
         #myCanvas {
             z-index: 10;
+        }
+        #myCanvas3 {
+            z-index: 11;
         }
         #btn {
             position: absolute;
@@ -43,6 +46,7 @@
 
 <canvas id="myCanvas"></canvas>
 <canvas id="myCanvas2"></canvas>
+<canvas id="myCanvas3"></canvas>
 
 <button id="btn">点击</button>
 <button id="btn2">点击2</button>
@@ -53,6 +57,7 @@
 
     $("#myCanvas").attr({"width": w_width, "height": w_height});
     $("#myCanvas2").attr({"width": w_width, "height": w_height});
+    $("#myCanvas3").attr({"width": w_width, "height": w_height});
 
 
     var objectData = {
@@ -101,8 +106,14 @@
 
     var option = {
         canvasId: 'myCanvas2',
+        canvas3Id: 'myCanvas3',
+        canvas3ClickFunction: canvas3ClickFunction,
         data: data
     };
+
+    function canvas3ClickFunction() {
+        console.log(this.selectState);
+    }
 
     var newMap = new LinearGradient(option);
 

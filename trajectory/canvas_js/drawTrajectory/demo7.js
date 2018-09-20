@@ -1,7 +1,15 @@
-
+/*
+*   功能，画沿二次贝塞尔曲线运动的小球
+*        获得贝塞尔曲线的控制点
+*        获得起点终点的坐标
+*
+* */
 const IMGWIDTH = 40;
 const TOPWINDOW = 40;
-const LEFTWINDOW = 100;
+const LEFTWINDOW = 80;
+const SEVERIMGS = "img/sever.png";
+const USERIMGS = "img/user.png";
+
 
 function LinearGradient(option) {
     this.canvas = document.getElementById(option.canvasId);
@@ -15,7 +23,70 @@ function LinearGradient(option) {
     this.biaoji = {};
     this.cishu = 1;
     this.isone = 1;
+    this.state = true;
+    
+    var self = this;
+    this.canvas3 = document.getElementById(option.canvas3Id);
+    this.ctx3 = this.canvas3.getContext("2d");
+    
+    this.canvas3.addEventListener("mousemove", function (event) {
+        var x = event.clientX - self.canvas3.getBoundingClientRect().left;
+        var y = event.clientY - self.canvas3.getBoundingClientRect().top;
+        self.drawStatus(x, y);
+    });
+    this.canvas3.addEventListener('click', option.canvas3ClickFunction.bind(self));
 }
+
+LinearGradient.prototype.drawStatus = function (x, y) {
+    this.ctx3.clearRect(0, 0, this.width, this.height);
+    this.selectState = {
+        id: "",
+        style: ""
+    };
+    var self = this;
+    var falg = true;
+    $.each(drawState.img, function (index, value) {
+        // console.log(value);
+        // self.ctx3.drawImage(value.img, value.x, value.y, value.imgwidth, value.imgwidth);
+        self.ctx3.beginPath();
+        self.ctx3.arc(value.x + value.width / 2, value.y + value.width / 2, value.width / 2, 0, 2*Math.PI);
+        if (self.ctx3.isPointInPath(x, y)) {
+            self.ctx3.drawImage(value.img, value.x, value.y, value.width + 5, value.width + 5);
+            self.ctx3.beginPath();
+            self.ctx3.arc(x, y, 7, 0, 2*Math.PI);
+            self.ctx3.fillStyle = "red";
+            self.ctx3.fill();
+            falg = false;
+            self.selectState.id = value.id;
+            self.selectState.style = value.style;
+            return false;
+        }
+    });
+    if (!falg) {
+        return;
+    }
+    $.each(drawState.line, function (index, value) {
+        self.ctx3.lineWidth = 2;
+        
+        self.ctx3.beginPath();
+    
+        self.ctx3.moveTo(value.start[0], value.start[1]);
+        // 曲线
+        self.ctx3.bezierCurveTo(value.ctrlA[0], value.ctrlA[1], value.ctrlB[0], value.ctrlB[1], value.end[0], value.end[1]);
+        
+        if (self.ctx3.isPointInStroke(x, y)) {
+            self.ctx3.strokeStyle = 'red';
+            self.ctx3.stroke();
+            self.ctx3.beginPath();
+            self.ctx3.arc(x, y, 7, 0, 2*Math.PI);
+            self.ctx3.fillStyle = "red";
+            self.ctx3.fill();
+            self.selectState.id = value.id;
+            self.selectState.style = "line";
+            return false;
+        }
+    })
+};
 
 LinearGradient.prototype.draw = function () {
     for (var i = 0; i < this.data.length; i++) {
@@ -28,7 +99,12 @@ LinearGradient.prototype.draw = function () {
         this.ctx.strokeStyle = '#777';
         
         this.ctx.stroke();
+        
+        if (this.state) {
+            drawState.line.push(this.data[i]);
+        }
     }
+    this.state = false;
 };
 
 LinearGradient.prototype.drawBall = function(id, color, cj) {
@@ -54,8 +130,9 @@ LinearGradient.prototype.drawBall = function(id, color, cj) {
             // 可设定颜色，默认为“red”。
             color: color ? color : "red",
             // 如果同一个路径上的小球越多，小球运动的速度越快。最快不超过0.2步。
-            speed: (0.005 + circlej * 0.001) > 0.2 ? 0.2 : (0.005 + circlej * 0.001)
+            speed: (0.005 + circlej * 0.002) > 0.2 ? 0.2 : (0.005 + circlej * 0.002)
         };
+        
     }
     
     // 重绘曲线
@@ -114,7 +191,7 @@ LinearGradient.prototype.addcircle = function(ci, cj) {
         oy = item.start[1];
     
     if (this.biaoji[ci][cj].index > 1) {
-        self.ctx.clearRect(x - 5, y - 5, 10, 10);
+        this.biaoji[ci].splice(ci, 1);
     } else {
         this.biaoji[ci][cj].index += this.biaoji[ci][this.biaoji[ci].length - 1].speed;
         var t = this.biaoji[ci][cj].index;
@@ -127,6 +204,10 @@ LinearGradient.prototype.addcircle = function(ci, cj) {
     }
 };
 
+var drawState = {
+    img: [],
+    line: []
+};
 
 function setPosition(obj) {
     var canvas = document.getElementById(obj.canvasId);
@@ -143,22 +224,38 @@ function setPosition(obj) {
     setting.bottomWindow = setting.topWindow + setting.imgwidth;
     
     var sever_imgs = document.createElement("img");
-    sever_imgs.src = "img/sever.png";
+    sever_imgs.src = SEVERIMGS;
     
     var user_imgs = document.createElement("img");
-    user_imgs.src = "img/user.png";
+    user_imgs.src = USERIMGS;
     
     var objData = calculatingPosition(data, setting);
     
     sever_imgs.onload = function () {
         $.each(objData.sever, function (index, value) {
             ctx.drawImage(sever_imgs, value.position[0], value.position[1], setting.imgwidth, setting.imgwidth);
+            drawState.img.push({
+                img: sever_imgs,
+                x: value.position[0],
+                y: value.position[1],
+                width: setting.imgwidth,
+                id: value.id,
+                style: "sever"
+            })
         });
     };
     
     user_imgs.onload = function () {
         $.each(objData.user, function (index, value) {
             ctx.drawImage(user_imgs, value.position[0], value.position[1], setting.imgwidth, setting.imgwidth);
+            drawState.img.push({
+                img: user_imgs,
+                x: value.position[0],
+                y: value.position[1],
+                width: setting.imgwidth,
+                id: value.id,
+                style: "user"
+            })
         });
     };
     
@@ -169,7 +266,7 @@ function calculatingPosition(data, setting) {
     var objData = {user: [], sever:[]};
     var minInterval = Math.floor(setting.imgwidth / 2);
     
-    var width = setting.width - setting.leftWindow * 2;
+    var width = setting.width - setting.leftWindow * 3 / 2;
     var indexs = Math.floor((width - setting.imgwidth) / (setting.imgwidth + minInterval));
     
     $.each(data.user, function (index, value) {
@@ -200,6 +297,7 @@ function calculatingPosition(data, setting) {
         }
         objData.sever[index].position = [left_w, top_h];
     });
+    // console.log(objData);
     return objData;
 }
 
@@ -235,7 +333,7 @@ function getCtrl(data) {
             objData.push(mdata);
         });
     });
-    console.log(objData);
+    // console.log(objData);
     return objData;
 }
 

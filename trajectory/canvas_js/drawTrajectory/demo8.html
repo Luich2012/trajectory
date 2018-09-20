@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="jquery-3.3.1.js"></script>
-    <script src="demo6.js"></script>
+    <script src="demo8.js"></script>
     <style>
         html,
         body {
@@ -20,13 +20,16 @@
             /*overflow: hidden;*/
 
         }
-        #myCanvas2 {
+        #myCanvas2, #myCanvas3 {
             position: absolute;
             width: 100%;
             height: 100%;
         }
-        #myCanvas {
+        #myCanvas1 {
             z-index: 10;
+        }
+        #myCanvas3 {
+            z-index: 11;
         }
         #btn {
             position: absolute;
@@ -41,8 +44,9 @@
 </head>
 <body>
 
-<canvas id="myCanvas"></canvas>
+<canvas id="myCanvas1"></canvas>
 <canvas id="myCanvas2"></canvas>
+<canvas id="myCanvas3"></canvas>
 
 <button id="btn">点击</button>
 <button id="btn2">点击2</button>
@@ -51,13 +55,12 @@
     var w_height = $(window).height();
     var w_width = $(window).width();
 
-    $("#myCanvas").attr({"width": w_width, "height": w_height});
+    $("#myCanvas1").attr({"width": w_width, "height": w_height});
     $("#myCanvas2").attr({"width": w_width, "height": w_height});
+    $("#myCanvas3").attr({"width": w_width, "height": w_height});
 
 
     var objectData = {
-        canvasId: 'myCanvas',
-        data: {
             user: [
                 {id: 0, name: "abc0", links: [1, 2, 3]},
                 {id: 1, name: "abc1", links: [0, 2, 4]},
@@ -92,19 +95,21 @@
                 {id: 3, name: "efg3"},
                 {id: 4, name: "efg4"}
             ]
-        }
-    };
-
-    var objData = setPosition(objectData);
-
-    var data = getCtrl(objData);
+        };
 
     var option = {
-        canvasId: 'myCanvas2',
-        data: data
+        canvas1Id: 'myCanvas1',
+        canvas2Id: 'myCanvas2',
+        canvas3Id: 'myCanvas3',
+        canvas3ClickFunction: canvas3ClickFunction,
+        data: objectData
     };
 
-    var newMap = new LinearGradient(option);
+    function canvas3ClickFunction() {
+        console.log(this.selectState);
+    }
+
+    var newMap = new CreateTrajectory(option);
 
     $("#btn").click(function () {
         newMap.drawBall("0-3", "red");
